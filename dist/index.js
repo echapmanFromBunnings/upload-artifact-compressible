@@ -19485,7 +19485,7 @@ function run() {
                 if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
                     const outputFileName = 'compressed-artifact.tar';
                     const outputTarStream = fs.createWriteStream(outputFileName);
-                    const pack = tar.c({ cwd: '/' }, searchResult.filesToUpload);
+                    const pack = tar.c({ cwd: './' }, searchResult.filesToUpload);
                     pack.pipe(outputTarStream);
                     outputTarStream.on('close', () => {
                         core.info(`File(s) compressed to ${outputFileName}`);
@@ -19499,6 +19499,18 @@ function run() {
                     core.info("Didn't compress, not worth it, to override to always compress, set the input `always-compress` to true");
                     artifacts = searchResult.filesToUpload;
                 }
+                const currentDirectory = './'; // Use '.' for the current directory
+                fs.readdir(currentDirectory, (err, files) => {
+                    if (err) {
+                        core.error(`Error reading directory ${currentDirectory}: ${err}`);
+                    }
+                    else {
+                        core.info(`Contents of ${currentDirectory}:`);
+                        files.forEach((file) => {
+                            core.info(file);
+                        });
+                    }
+                });
                 const artifactClient = (0, artifact_1.create)();
                 const options = {
                     continueOnError: false

@@ -52,7 +52,7 @@ async function run(): Promise<void> {
         const outputFileName = 'compressed-artifact.tar'
 
         const outputTarStream = fs.createWriteStream(outputFileName)
-        const pack = tar.c({cwd: '/'}, searchResult.filesToUpload)
+        const pack = tar.c({cwd: './'}, searchResult.filesToUpload)
 
         pack.pipe(outputTarStream)
 
@@ -70,6 +70,20 @@ async function run(): Promise<void> {
         )
         artifacts = searchResult.filesToUpload
       }
+
+      
+      const currentDirectory = './'; // Use '.' for the current directory
+
+      fs.readdir(currentDirectory, (err, files) => {
+        if (err) {
+          core.error(`Error reading directory ${currentDirectory}: ${err}`);
+        } else {
+          core.info(`Contents of ${currentDirectory}:`);
+          files.forEach((file) => {
+            core.info(file);
+          });
+        }
+      });
 
       const artifactClient = create()
       const options: UploadOptions = {
