@@ -19506,7 +19506,7 @@ function run() {
                     }
                     else {
                         core.info(`Contents of ${currentDirectory}:`);
-                        files.forEach((file) => {
+                        files.forEach(file => {
                             core.info(file);
                         });
                     }

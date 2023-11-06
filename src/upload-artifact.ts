@@ -71,19 +71,18 @@ async function run(): Promise<void> {
         artifacts = searchResult.filesToUpload
       }
 
-      
-      const currentDirectory = './'; // Use '.' for the current directory
+      const currentDirectory = './' // Use '.' for the current directory
 
       fs.readdir(currentDirectory, (err, files) => {
         if (err) {
-          core.error(`Error reading directory ${currentDirectory}: ${err}`);
+          core.error(`Error reading directory ${currentDirectory}: ${err}`)
         } else {
-          core.info(`Contents of ${currentDirectory}:`);
-          files.forEach((file) => {
-            core.info(file);
-          });
+          core.info(`Contents of ${currentDirectory}:`)
+          files.forEach(file => {
+            core.info(file)
+          })
         }
-      });
+      })
 
       const artifactClient = create()
       const options: UploadOptions = {
