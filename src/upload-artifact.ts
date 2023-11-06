@@ -58,6 +58,7 @@ async function run(): Promise<void> {
 
         outputTarStream.on('close', async () => {
           core.info(`File(s) compressed to ${outputFileName}`)
+          searchResult.rootDirectory = './'
           await runUpload(inputs, [outputFileName], searchResult)
         })
 
@@ -70,19 +71,6 @@ async function run(): Promise<void> {
         )
         await runUpload(inputs, searchResult.filesToUpload, searchResult)
       }
-
-      const currentDirectory = './' // Use '.' for the current directory
-
-      fs.readdir(currentDirectory, (err, files) => {
-        if (err) {
-          core.error(`Error reading directory ${currentDirectory}: ${err}`)
-        } else {
-          core.info(`Contents of ${currentDirectory}:`)
-          files.forEach(file => {
-            core.info(file)
-          })
-        }
-      })
     }
   } catch (error) {
     core.setFailed((error as Error).message)

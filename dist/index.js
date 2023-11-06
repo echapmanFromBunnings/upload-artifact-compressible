@@ -19488,6 +19488,7 @@ function run() {
                     pack.pipe(outputTarStream);
                     outputTarStream.on('close', () => __awaiter(this, void 0, void 0, function* () {
                         core.info(`File(s) compressed to ${outputFileName}`);
+                        searchResult.rootDirectory = './';
                         yield runUpload(inputs, [outputFileName], searchResult);
                     }));
                     outputTarStream.on('error', err => {
@@ -19498,18 +19499,6 @@ function run() {
                     core.info("Didn't compress, not worth it, to override to always compress, set the input `always-compress` to true");
                     yield runUpload(inputs, searchResult.filesToUpload, searchResult);
                 }
-                const currentDirectory = './'; // Use '.' for the current directory
-                fs.readdir(currentDirectory, (err, files) => {
-                    if (err) {
-                        core.error(`Error reading directory ${currentDirectory}: ${err}`);
-                    }
-                    else {
-                        core.info(`Contents of ${currentDirectory}:`);
-                        files.forEach(file => {
-                            core.info(file);
-                        });
-                    }
-                });
             }
         }
         catch (error) {
