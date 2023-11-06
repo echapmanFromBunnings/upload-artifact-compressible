@@ -2,7 +2,9 @@ import * as core from '@actions/core'
 import {create, UploadOptions} from '@actions/artifact'
 import {findFilesToUpload} from './search'
 import {getInputs} from './input-helper'
-import {NoFileOptions} from './constants'
+import {NoFileOptions, Inputs} from './constants'
+import * as tar from 'tar'
+import * as fs from 'fs'
 
 async function run(): Promise<void> {
   try {
@@ -43,17 +45,44 @@ async function run(): Promise<void> {
         )
       }
 
+      let artifacts: string[] = []
+      const alwaysCompress = core.getInput(Inputs.AlwaysCompress)
+
+      if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
+        const outputFileName = 'compressed-artifact.tar'
+
+        const outputTarStream = fs.createWriteStream(outputFileName)
+        const pack = tar.c({cwd: '/'}, searchResult.filesToUpload)
+
+        pack.pipe(outputTarStream)
+
+        outputTarStream.on('close', () => {
+          core.info(`File(s) compressed to ${outputFileName}`)
+        })
+
+        outputTarStream.on('error', err => {
+          core.error(`Error compressing files: ${err}`)
+        })
+        artifacts = [outputFileName]
+      } else {
+        core.info(
+          "Didn't compress, not worth it, to override to always compress, set the input `always-compress` to true"
+        )
+        artifacts = searchResult.filesToUpload
+      }
+
       const artifactClient = create()
       const options: UploadOptions = {
         continueOnError: false
       }
+
       if (inputs.retentionDays) {
         options.retentionDays = inputs.retentionDays
       }
 
       const uploadResponse = await artifactClient.uploadArtifact(
         inputs.artifactName,
-        searchResult.filesToUpload,
+        artifacts,
         searchResult.rootDirectory,
         options
       )

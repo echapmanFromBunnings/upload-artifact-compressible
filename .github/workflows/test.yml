@@ -85,7 +85,13 @@ jobs:
           path/to/dir-1/*
           path/to/dir-[23]/*
           !path/to/dir-3/*.txt
-
+    # Upload a directory that contains a file that will be uploaded with GZip with always compress
+    - name: 'Upload artifact #3'
+      uses: ./
+      with:
+        name: 'GZip-Artifact-compressed'
+        path: path/to/dir-3/
+        always-compress: true
     # Download Artifact #1 and verify the correctness of the content
     - name: 'Download artifact #1'
       uses: actions/download-artifact@v3
