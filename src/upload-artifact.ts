@@ -52,13 +52,15 @@ async function run(): Promise<void> {
 
       if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
         const outputTarStream = fs.createWriteStream(outputFileName)
-        const pack = tar.c({cwd: './'}, searchResult.filesToUpload)
+        const pack = tar.c(
+          {cwd: searchResult.rootDirectory},
+          searchResult.filesToUpload
+        )
 
         pack.pipe(outputTarStream)
 
         outputTarStream.on('close', async () => {
           core.info(`File(s) compressed to ${outputFileName}`)
-          searchResult.rootDirectory = './'
           await runUpload(inputs, [outputFileName], searchResult)
         })
 
