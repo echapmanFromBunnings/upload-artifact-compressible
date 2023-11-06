@@ -46,7 +46,6 @@ async function run(): Promise<void> {
         )
       }
 
-      let artifacts: string[] = []
       const alwaysCompress = core.getInput(Inputs.AlwaysCompress)
 
       const outputFileName = 'compressed-artifact.tar'
