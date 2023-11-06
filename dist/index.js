@@ -19480,7 +19480,6 @@ function run() {
                 if (searchResult.filesToUpload.length > 10000) {
                     core.warning(`There are over 10,000 files in this artifact, consider creating an archive before upload to improve the upload performance.`);
                 }
-                let artifacts = [];
                 const alwaysCompress = core.getInput(constants_1.Inputs.AlwaysCompress);
                 const outputFileName = 'compressed-artifact.tar';
                 if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
