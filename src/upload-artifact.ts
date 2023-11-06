@@ -1,10 +1,11 @@
 import * as core from '@actions/core'
 import {create, UploadOptions} from '@actions/artifact'
-import {findFilesToUpload} from './search'
+import {findFilesToUpload, SearchResult} from './search'
 import {getInputs} from './input-helper'
 import {NoFileOptions, Inputs} from './constants'
 import * as tar from 'tar'
 import * as fs from 'fs'
+import {UploadInputs} from './upload-inputs'
 
 async function run(): Promise<void> {
   try {
@@ -48,27 +49,27 @@ async function run(): Promise<void> {
       let artifacts: string[] = []
       const alwaysCompress = core.getInput(Inputs.AlwaysCompress)
 
-      if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
-        const outputFileName = 'compressed-artifact.tar'
+      const outputFileName = 'compressed-artifact.tar'
 
+      if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
         const outputTarStream = fs.createWriteStream(outputFileName)
         const pack = tar.c({cwd: './'}, searchResult.filesToUpload)
 
         pack.pipe(outputTarStream)
 
-        outputTarStream.on('close', () => {
+        outputTarStream.on('close', async () => {
           core.info(`File(s) compressed to ${outputFileName}`)
+          await runUpload(inputs, [outputFileName], searchResult)
         })
 
         outputTarStream.on('error', err => {
           core.error(`Error compressing files: ${err}`)
         })
-        artifacts = [outputFileName]
       } else {
         core.info(
           "Didn't compress, not worth it, to override to always compress, set the input `always-compress` to true"
         )
-        artifacts = searchResult.filesToUpload
+        await runUpload(inputs, searchResult.filesToUpload, searchResult)
       }
 
       const currentDirectory = './' // Use '.' for the current directory
@@ -83,35 +84,41 @@ async function run(): Promise<void> {
           })
         }
       })
-
-      const artifactClient = create()
-      const options: UploadOptions = {
-        continueOnError: false
-      }
-
-      if (inputs.retentionDays) {
-        options.retentionDays = inputs.retentionDays
-      }
-
-      const uploadResponse = await artifactClient.uploadArtifact(
-        inputs.artifactName,
-        artifacts,
-        searchResult.rootDirectory,
-        options
-      )
-
-      if (uploadResponse.failedItems.length > 0) {
-        core.setFailed(
-          `An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`
-        )
-      } else {
-        core.info(
-          `Artifact ${uploadResponse.artifactName} has been successfully uploaded!`
-        )
-      }
     }
   } catch (error) {
     core.setFailed((error as Error).message)
+  }
+
+  async function runUpload(
+    inputs: UploadInputs,
+    artifacts: string[],
+    searchResult: SearchResult
+  ) {
+    const artifactClient = create()
+    const options: UploadOptions = {
+      continueOnError: false
+    }
+
+    if (inputs.retentionDays) {
+      options.retentionDays = inputs.retentionDays
+    }
+
+    const uploadResponse = await artifactClient.uploadArtifact(
+      inputs.artifactName,
+      artifacts,
+      searchResult.rootDirectory,
+      options
+    )
+
+    if (uploadResponse.failedItems.length > 0) {
+      core.setFailed(
+        `An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`
+      )
+    } else {
+      core.info(
+        `Artifact ${uploadResponse.artifactName} has been successfully uploaded!`
+      )
+    }
   }
 }
 

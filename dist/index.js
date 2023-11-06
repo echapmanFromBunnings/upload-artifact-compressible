@@ -19482,22 +19482,22 @@ function run() {
                 }
                 let artifacts = [];
                 const alwaysCompress = core.getInput(constants_1.Inputs.AlwaysCompress);
+                const outputFileName = 'compressed-artifact.tar';
                 if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
-                    const outputFileName = 'compressed-artifact.tar';
                     const outputTarStream = fs.createWriteStream(outputFileName);
                     const pack = tar.c({ cwd: './' }, searchResult.filesToUpload);
                     pack.pipe(outputTarStream);
-                    outputTarStream.on('close', () => {
+                    outputTarStream.on('close', () => __awaiter(this, void 0, void 0, function* () {
                         core.info(`File(s) compressed to ${outputFileName}`);
-                    });
+                        yield runUpload(inputs, [outputFileName], searchResult);
+                    }));
                     outputTarStream.on('error', err => {
                         core.error(`Error compressing files: ${err}`);
                     });
-                    artifacts = [outputFileName];
                 }
                 else {
                     core.info("Didn't compress, not worth it, to override to always compress, set the input `always-compress` to true");
-                    artifacts = searchResult.filesToUpload;
+                    yield runUpload(inputs, searchResult.filesToUpload, searchResult);
                 }
                 const currentDirectory = './'; // Use '.' for the current directory
                 fs.readdir(currentDirectory, (err, files) => {
@@ -19511,6 +19511,13 @@ function run() {
                         });
                     }
                 });
+            }
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+        function runUpload(inputs, artifacts, searchResult) {
+            return __awaiter(this, void 0, void 0, function* () {
                 const artifactClient = (0, artifact_1.create)();
                 const options = {
                     continueOnError: false
@@ -19525,10 +19532,7 @@ function run() {
                 else {
                     core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
                 }
-            }
-        }
-        catch (error) {
-            core.setFailed(error.message);
+            });
         }
     });
 }
