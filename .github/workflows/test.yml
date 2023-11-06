@@ -92,7 +92,7 @@ jobs:
       with:
         name: 'GZip-Artifact-compressed'
         path: path/to/dir-3/
-        always-compress: true
+        always-compress: 'true'
     # Download Artifact #1 and verify the correctness of the content
     - name: 'Download artifact #1'
       uses: actions/download-artifact@v3
