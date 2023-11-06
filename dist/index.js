@@ -19482,12 +19482,13 @@ function run() {
                 }
                 const alwaysCompress = core.getInput(constants_1.Inputs.AlwaysCompress);
                 const outputFileName = 'compressed-artifact.tar';
-                if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
+                if (searchResult.filesToUpload.length > 200 || alwaysCompress == 'true') {
                     const outputTarStream = fs.createWriteStream(outputFileName);
                     const pack = tar.c({ cwd: searchResult.rootDirectory }, searchResult.filesToUpload);
                     pack.pipe(outputTarStream);
                     outputTarStream.on('close', () => __awaiter(this, void 0, void 0, function* () {
                         core.info(`File(s) compressed to ${outputFileName}`);
+                        searchResult.rootDirectory = './';
                         yield runUpload(inputs, [outputFileName], searchResult);
                     }));
                     outputTarStream.on('error', err => {

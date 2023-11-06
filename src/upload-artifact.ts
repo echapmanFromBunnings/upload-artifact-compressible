@@ -50,12 +50,9 @@ async function run(): Promise<void> {
 
       const outputFileName = 'compressed-artifact.tar'
 
-      if (searchResult.filesToUpload.length > 20 || alwaysCompress == 'true') {
+      if (searchResult.filesToUpload.length > 200 || alwaysCompress == 'true') {
         const outputTarStream = fs.createWriteStream(outputFileName)
-        const pack = tar.c(
-          {cwd: searchResult.rootDirectory},
-          searchResult.filesToUpload
-        )
+        const pack = tar.c({cwd: process.cwd()}, searchResult.filesToUpload)
 
         pack.pipe(outputTarStream)
 
